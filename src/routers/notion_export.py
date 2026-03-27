@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
-from src.service import get_service
+from src.recording.service import get_service
 
 router = APIRouter(prefix="/api/sessions", tags=["notion"])
 

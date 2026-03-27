@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from src.service import get_service
-from src.logging import get_logger
+from src.recording.service import get_service
+from src.infra.logging import get_logger
 
 router = APIRouter(tags=["audio"])
 logger = get_logger(__name__)

@@ -4,16 +4,16 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Callable, Dict, List
 
-from src.models import TranscriptSegment
-from src.events import Event, EventBus, EventType
-from src.logging import get_logger
+from src.infra.models import TranscriptSegment
+from src.infra.events import Event, EventBus, EventType
+from src.infra.logging import get_logger
 
 if TYPE_CHECKING:
-    from src.audio.diarization import DiarizationService
-    from src.audio.forced_aligner import ForcedAlignmentService
-    from src.extractor import KnowledgeExtractor
-    from src.manager import RecordingSessionManager
-    from src.store import RecordingSessionStore
+    from src.recording.audio.diarization import DiarizationService
+    from src.recording.audio.forced_aligner import ForcedAlignmentService
+    from src.knowledge.extractor import KnowledgeExtractor
+    from src.recording.manager import RecordingSessionManager
+    from src.recording.store import RecordingSessionStore
 
 logger = get_logger(__name__)
 
@@ -123,7 +123,7 @@ class RecordingPipeline:
             logger.warning(f"Failed to convert raw→wav for {session_id}: {e}")
 
     async def _run_alignment(self, session_id: str) -> None:
-        from src.alignment import run_alignment
+        from src.knowledge.alignment import run_alignment
 
         lock = self._alignment_locks.setdefault(session_id, asyncio.Lock())
         async with lock:
@@ -140,7 +140,7 @@ class RecordingPipeline:
             )
 
     async def _run_extraction(self, session_id: str) -> None:
-        from src.extractor import run_extraction
+        from src.knowledge.extractor import run_extraction
 
         cached = self._session_segments.pop(session_id, None)
         await run_extraction(

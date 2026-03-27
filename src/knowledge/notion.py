@@ -7,8 +7,8 @@ from typing import Any, Dict, List
 
 import httpx
 
-from src.models import KnowledgePage
-from src.logging import get_logger
+from src.infra.models import KnowledgePage
+from src.infra.logging import get_logger
 
 logger = get_logger(__name__)
 

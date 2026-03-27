@@ -8,11 +8,11 @@ import wave
 from pathlib import Path
 from typing import List, TYPE_CHECKING
 
-from src.models import EnrichedTranscriptSegment, WordTimestamp
-from src.logging import get_logger
+from src.infra.models import EnrichedTranscriptSegment, WordTimestamp
+from src.infra.logging import get_logger
 
 if TYPE_CHECKING:
-    from src.models import TranscriptSegment
+    from src.infra.models import TranscriptSegment
 
 logger = get_logger(__name__)
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 
-from src.service import get_service
+from src.recording.service import get_service
 
 router = APIRouter(prefix="/api/sessions/{session_id}/screenshots", tags=["screenshots"])
 

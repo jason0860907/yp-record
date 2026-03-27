@@ -6,8 +6,8 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
-from src.service import get_service
-from src.logging import get_logger
+from src.recording.service import get_service
+from src.infra.logging import get_logger
 
 router = APIRouter(prefix="/api/sessions", tags=["alignment"])
 logger = get_logger(__name__)

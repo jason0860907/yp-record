@@ -8,8 +8,8 @@ from typing import Dict, Set
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
-from src.events import EventType, Event, get_event_bus
-from src.logging import get_logger
+from src.infra.events import EventType, Event, get_event_bus
+from src.infra.logging import get_logger
 
 router = APIRouter(tags=["transcript"])
 logger = get_logger(__name__)

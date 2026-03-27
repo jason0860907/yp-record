@@ -5,14 +5,14 @@ import asyncio
 import time
 from typing import TYPE_CHECKING, List
 
-from src.models import AlignmentResult, EnrichedTranscriptSegment
-from src.events import Event, EventBus, EventType
-from src.logging import get_logger
+from src.infra.models import AlignmentResult, EnrichedTranscriptSegment
+from src.infra.events import Event, EventBus, EventType
+from src.infra.logging import get_logger
 
 if TYPE_CHECKING:
-    from src.audio.diarization import DiarizationService, SpeakerSegment
-    from src.audio.forced_aligner import ForcedAlignmentService
-    from src.store import RecordingSessionStore
+    from src.recording.audio.diarization import DiarizationService, SpeakerSegment
+    from src.recording.audio.forced_aligner import ForcedAlignmentService
+    from src.recording.store import RecordingSessionStore
 
 logger = get_logger(__name__)
 

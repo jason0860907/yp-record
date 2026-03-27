@@ -9,13 +9,13 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, List
 
-from src.llm import LLMClient
+from src.knowledge.llm import LLMClient
 
 if TYPE_CHECKING:
-    from src.events import EventBus
-    from src.store import RecordingSessionStore
-from src.logging import get_logger
-from src.models import (
+    from src.infra.events import EventBus
+    from src.recording.store import RecordingSessionStore
+from src.infra.logging import get_logger
+from src.infra.models import (
     KnowledgeCategory,
     KnowledgePage,
     KnowledgeSource,
@@ -137,7 +137,7 @@ async def run_extraction(
     cached_segments: list[TranscriptSegment] | None = None,
 ) -> None:
     """Orchestrate transcript polish + meeting note generation for a session."""
-    from src.events import Event, EventType
+    from src.infra.events import Event, EventType
 
     segments = cached_segments
     if not segments:

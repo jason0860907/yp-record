@@ -1,9 +1,9 @@
 """Alignment result persistence."""
 from __future__ import annotations
 
-from src.logging import get_logger
-from src.models import AlignmentResult
-from src.store.base import BaseStore
+from src.infra.logging import get_logger
+from src.infra.models import AlignmentResult
+from src.recording.store.base import BaseStore
 
 logger = get_logger(__name__)
 

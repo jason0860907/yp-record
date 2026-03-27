@@ -8,8 +8,8 @@ from typing import List
 import httpx
 from qwen_asr.inference.utils import parse_asr_output
 
-from src.models import TranscriptSegment
-from src.logging import get_logger
+from src.infra.models import TranscriptSegment
+from src.infra.logging import get_logger
 
 logger = get_logger(__name__)
 

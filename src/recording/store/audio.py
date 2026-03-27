@@ -8,8 +8,8 @@ import wave
 from pathlib import Path
 from typing import List
 
-from src.logging import get_logger
-from src.store.base import BaseStore
+from src.infra.logging import get_logger
+from src.recording.store.base import BaseStore
 
 logger = get_logger(__name__)
 

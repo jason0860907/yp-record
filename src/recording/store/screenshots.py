@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 from typing import List
 
-from src.store.base import BaseStore
+from src.recording.store.base import BaseStore
 
 
 class ScreenshotStoreMixin(BaseStore):

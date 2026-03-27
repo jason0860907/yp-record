@@ -5,18 +5,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.config import get_settings
-from src.events import get_event_bus
-from src.logging import get_logger, setup_logging
-from src.models import KnowledgePage, KnowledgeCategory, KnowledgeSource, KnowledgeStatus
-from src.store import RecordingSessionStore
-from src.manager import RecordingSessionManager
-from src.audio.qwen_asr_stt import QwenASRSTT
-from src.audio.forced_aligner import ForcedAlignmentService
-from src.audio.diarization import DiarizationService
-from src.pipeline import RecordingPipeline
-from src.notion import NotionKB
-from src.extractor import KnowledgeExtractor
+from src.infra.config import get_settings
+from src.infra.events import get_event_bus
+from src.infra.logging import get_logger, setup_logging
+from src.infra.models import KnowledgePage, KnowledgeCategory, KnowledgeSource, KnowledgeStatus
+from src.recording.store import RecordingSessionStore
+from src.recording.manager import RecordingSessionManager
+from src.recording.audio.qwen_asr_stt import QwenASRSTT
+from src.recording.audio.forced_aligner import ForcedAlignmentService
+from src.recording.audio.diarization import DiarizationService
+from src.recording.pipeline import RecordingPipeline
+from src.knowledge.notion import NotionKB
+from src.knowledge.extractor import KnowledgeExtractor
 
 logger = get_logger(__name__)
 
@@ -57,7 +57,7 @@ class RecordingService:
 
         self._extractor: KnowledgeExtractor | None = None
         if settings.extract_enabled:
-            from src.llm import LLMClient as ExtractLLM
+            from src.knowledge.llm import LLMClient as ExtractLLM
             llm = ExtractLLM(
                 base_url=settings.extract_base_url,
                 model=settings.extract_model,
@@ -112,7 +112,7 @@ class RecordingService:
 
     def create_audio_receiver(self, channels: int, session_id: str):
         """Create an AudioReceiver for a session."""
-        from src.audio.receiver import AudioReceiver
+        from src.recording.audio.receiver import AudioReceiver
         settings = self._settings
         audio_save_path = Path(settings.storage_dir) / session_id / "audio.raw"
         return AudioReceiver(

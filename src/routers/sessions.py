@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List
 
-from src.service import get_service
+from src.recording.service import get_service
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 

@@ -4,9 +4,9 @@ from __future__ import annotations
 import asyncio
 from typing import List
 
-from src.logging import get_logger
-from src.models import SessionInfo
-from src.store.base import BaseStore
+from src.infra.logging import get_logger
+from src.infra.models import SessionInfo
+from src.recording.store.base import BaseStore
 
 logger = get_logger(__name__)
 

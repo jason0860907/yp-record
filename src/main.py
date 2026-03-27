@@ -13,11 +13,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from src.config import get_settings
-from src.service import get_service
+from src.infra.config import get_settings
+from src.recording.service import get_service
 from src.routers import sessions, audio_ws, transcript_ws, alignment, notion_export, screenshots
 from src.routers.transcript_ws import setup_event_handlers
-from src.logging import get_logger
+from src.infra.logging import get_logger
 
 logger = get_logger(__name__)
 

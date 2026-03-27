@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-from src.logging import get_logger
+from src.infra.logging import get_logger
 
 logger = get_logger(__name__)
 

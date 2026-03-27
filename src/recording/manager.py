@@ -4,12 +4,12 @@ from __future__ import annotations
 import uuid
 from typing import Dict, TYPE_CHECKING
 
-from src.models import SessionInfo, SessionStatus, _iso_now
-from src.events import EventType, publish_event
-from src.logging import get_logger
+from src.infra.models import SessionInfo, SessionStatus, _iso_now
+from src.infra.events import EventType, publish_event
+from src.infra.logging import get_logger
 
 if TYPE_CHECKING:
-    from src.store import RecordingSessionStore
+    from src.recording.store import RecordingSessionStore
 
 logger = get_logger(__name__)
 

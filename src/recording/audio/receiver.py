@@ -7,10 +7,10 @@ from typing import List, Protocol
 
 from starlette.websockets import WebSocket, WebSocketDisconnect, WebSocketState
 
-from src.audio.channels import split_stereo
-from src.models import TranscriptSegment
-from src.events import EventType, publish_event
-from src.logging import get_logger
+from src.recording.audio.channels import split_stereo
+from src.infra.models import TranscriptSegment
+from src.infra.events import EventType, publish_event
+from src.infra.logging import get_logger
 
 logger = get_logger(__name__)
 
