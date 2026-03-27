@@ -105,7 +105,7 @@ class RecordingService:
         if self.diarization_service:
             await self.diarization_service.close()
         if self._extractor:
-            await self._extractor._llm.close()
+            await self._extractor.close()
         if self._notion:
             await self._notion.close()
         logger.info("RecordingService closed")

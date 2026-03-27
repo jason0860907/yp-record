@@ -7,9 +7,13 @@ Step 2: Generate structured meeting note from polished transcript
 from __future__ import annotations
 
 import re
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from src.llm import LLMClient
+
+if TYPE_CHECKING:
+    from src.events import EventBus
+    from src.store import RecordingSessionStore
 from src.logging import get_logger
 from src.models import (
     KnowledgeCategory,
@@ -125,11 +129,65 @@ def _split_chunks(text: str, max_chars: int = 8000) -> list[str]:
 # Extractor
 # ---------------------------------------------------------------------------
 
+async def run_extraction(
+    session_id: str,
+    extractor: "KnowledgeExtractor",
+    store: "RecordingSessionStore",
+    event_bus: "EventBus",
+    cached_segments: list[TranscriptSegment] | None = None,
+) -> None:
+    """Orchestrate transcript polish + meeting note generation for a session."""
+    from src.events import Event, EventType
+
+    segments = cached_segments
+    if not segments:
+        segments = await store.load_segments(session_id)
+    if not segments:
+        logger.debug(f"No segments for session '{session_id}', skipping extraction")
+        return
+
+    raw_text = format_segments(segments)
+    logger.info(f"Running extraction for session '{session_id}' ({len(segments)} segments)")
+
+    try:
+        polished = await extractor.polish_transcript(raw_text)
+        if polished:
+            await store.save_polished_transcript(session_id, polished)
+
+        transcript_for_note = polished or raw_text
+        session_info = await store.load_session(session_id)
+        page = await extractor.generate_session_note(
+            transcript=transcript_for_note,
+            session_info=session_info,
+        )
+        if page is None:
+            logger.warning(f"Meeting note generation returned None for '{session_id}'")
+            return
+
+        page.session_id = session_id
+        await store.save_meeting_note(session_id, page)
+
+        page.content += f"\n\n---\n\n# 完整逐字稿\n\n{transcript_for_note}"
+
+        await event_bus.publish(Event(
+            type=EventType.KNOWLEDGE_EXTRACTED,
+            data={"page": page.model_dump(), "session_id": session_id},
+            source="extractor",
+        ))
+        logger.info(f"Extraction completed for '{session_id}': '{page.title}'")
+
+    except Exception as e:
+        logger.error(f"Extraction failed for session '{session_id}': {e}")
+
+
 class KnowledgeExtractor:
     """Two-step LLM extraction: polish transcript → generate meeting note."""
 
     def __init__(self, llm: LLMClient) -> None:
         self._llm = llm
+
+    async def close(self) -> None:
+        await self._llm.close()
 
     # -- Step 1: Polish transcript --
 

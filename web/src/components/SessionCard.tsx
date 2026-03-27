@@ -1,17 +1,12 @@
 import { Mic, Trash2 } from 'lucide-react'
 import type { SessionInfo } from '../types'
+import { formatTime } from '../utils/formatters'
 
 interface Props {
   session: SessionInfo
   isActive: boolean
   onClick: () => void
   onDelete?: (id: string) => void
-}
-
-function formatDuration(secs: number): string {
-  const m = Math.floor(secs / 60)
-  const s = Math.floor(secs % 60)
-  return `${m}:${s.toString().padStart(2, '0')}`
 }
 
 function formatDate(iso: string | null): string {
@@ -51,7 +46,7 @@ export default function SessionCard({ session, isActive, onClick, onDelete }: Pr
               {session.segment_count}
             </span>
             {session.duration_seconds > 0 && (
-              <span className="font-mono">{formatDuration(session.duration_seconds)}</span>
+              <span className="font-mono">{formatTime(session.duration_seconds)}</span>
             )}
           </div>
         </div>

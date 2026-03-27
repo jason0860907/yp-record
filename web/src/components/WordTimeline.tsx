@@ -1,4 +1,5 @@
 import type { EnrichedTranscriptSegment } from '../types'
+import { formatTimestamp } from '../utils/formatters'
 
 const SPEAKER_COLORS: Record<number, { border: string; badge: string; word: string; active: string }> = {
   0: { border: 'border-l-indigo-400', badge: 'bg-indigo-100/70 text-indigo-600', word: 'hover:bg-indigo-50 text-slate-600', active: 'bg-indigo-100 text-indigo-700 font-semibold' },
@@ -21,11 +22,7 @@ function getSpeakerIndex(speaker: string | null): number {
   return match ? parseInt(match[0]) % 5 : 0
 }
 
-function formatTs(secs: number): string {
-  const m = Math.floor(secs / 60)
-  const s = secs % 60
-  return `${m}:${s.toFixed(1).padStart(4, '0')}`
-}
+const formatTs = formatTimestamp
 
 interface Props {
   segments: EnrichedTranscriptSegment[]
