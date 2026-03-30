@@ -104,7 +104,6 @@ class RecordingSessionManager:
             data={"session_id": session_id, "duration": session.duration_seconds},
             source="session_manager",
         )
-        self._sessions.pop(session_id, None)
         logger.info(f"Session ended: {session_id}")
         return session
 
@@ -146,13 +145,7 @@ class RecordingSessionManager:
             logger.info(f"Preloaded {count} sessions from disk")
 
     async def list_all_sessions(self) -> list[SessionInfo]:
-        in_memory = {s.id: s for s in self._sessions.values()}
-        if self._store:
-            disk_sessions = await self._store.list_sessions()
-            for s in disk_sessions:
-                if s.id not in in_memory:
-                    in_memory[s.id] = s
-        result = list(in_memory.values())
+        result = list(self._sessions.values())
         result.sort(key=lambda s: s.started_at or "", reverse=True)
         return result
 
