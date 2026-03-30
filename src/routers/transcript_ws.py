@@ -75,10 +75,51 @@ def setup_event_handlers() -> None:
                 "error": event.data.get("error", ""),
             })
 
+    async def on_youtube_download_progress(event: Event) -> None:
+        session_id = event.data.get("session_id", "")
+        if session_id:
+            await _broadcast(session_id, {
+                "type": "youtube_download_progress",
+                "session_id": session_id,
+                "percent": event.data.get("percent", 0),
+                "status": event.data.get("status", "downloading"),
+            })
+
+    async def on_youtube_download_completed(event: Event) -> None:
+        session_id = event.data.get("session_id", "")
+        if session_id:
+            await _broadcast(session_id, {
+                "type": "youtube_download_completed",
+                "session_id": session_id,
+            })
+
+    async def on_youtube_download_failed(event: Event) -> None:
+        session_id = event.data.get("session_id", "")
+        if session_id:
+            await _broadcast(session_id, {
+                "type": "youtube_download_failed",
+                "session_id": session_id,
+                "error": event.data.get("error", ""),
+            })
+
+    async def on_youtube_transcription_progress(event: Event) -> None:
+        session_id = event.data.get("session_id", "")
+        if session_id:
+            await _broadcast(session_id, {
+                "type": "youtube_transcription_progress",
+                "session_id": session_id,
+                "current_chunk": event.data.get("current_chunk", 0),
+                "total_chunks": event.data.get("total_chunks", 0),
+            })
+
     bus.subscribe(EventType.TRANSCRIPT_SEGMENT, on_transcript_segment)
     bus.subscribe(EventType.ALIGNMENT_STARTED, on_alignment_started)
     bus.subscribe(EventType.ALIGNMENT_COMPLETED, on_alignment_completed)
     bus.subscribe(EventType.ALIGNMENT_FAILED, on_alignment_failed)
+    bus.subscribe(EventType.YOUTUBE_DOWNLOAD_PROGRESS, on_youtube_download_progress)
+    bus.subscribe(EventType.YOUTUBE_DOWNLOAD_COMPLETED, on_youtube_download_completed)
+    bus.subscribe(EventType.YOUTUBE_DOWNLOAD_FAILED, on_youtube_download_failed)
+    bus.subscribe(EventType.YOUTUBE_TRANSCRIPTION_PROGRESS, on_youtube_transcription_progress)
 
 
 @router.websocket("/api/transcript/ws")

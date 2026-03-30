@@ -1,4 +1,4 @@
-import { Mic, Trash2 } from 'lucide-react'
+import { Mic, Trash2, Youtube } from 'lucide-react'
 import type { SessionInfo } from '../types'
 import { formatTime } from '../utils/formatters'
 
@@ -16,6 +16,8 @@ function formatDate(iso: string | null): string {
 
 export default function SessionCard({ session, isActive, onClick, onDelete }: Props) {
   const isRecording = session.status === 'recording' || session.status === 'paused'
+  const isYouTube = session.source === 'youtube'
+  const isProcessing = session.status === 'processing'
 
   return (
     <div
@@ -33,6 +35,9 @@ export default function SessionCard({ session, isActive, onClick, onDelete }: Pr
         {isRecording && (
           <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-red-500 animate-pulse-ring" />
         )}
+        {isProcessing && (
+          <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-amber-500 animate-pulse" />
+        )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium leading-tight">
             {session.title || `Session ${session.id.slice(0, 6)}`}
@@ -42,7 +47,7 @@ export default function SessionCard({ session, isActive, onClick, onDelete }: Pr
           </p>
           <div className="mt-1.5 flex items-center gap-2.5 text-xs text-slate-400">
             <span className="flex items-center gap-1">
-              <Mic className="h-3 w-3" />
+              {isYouTube ? <Youtube className="h-3 w-3" /> : <Mic className="h-3 w-3" />}
               {session.segment_count}
             </span>
             {session.duration_seconds > 0 && (

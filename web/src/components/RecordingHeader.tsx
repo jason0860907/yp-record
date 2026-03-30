@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Mic, MicOff, Wifi, WifiOff, Square, Pause, Play, AlertCircle } from 'lucide-react'
+import { Mic, MicOff, Wifi, WifiOff, Square, Pause, Play, AlertCircle, Youtube, Loader2 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { updateSession } from '../api/client'
 import { useSession } from '../hooks/useSession'
@@ -13,6 +13,7 @@ export default function RecordingHeader() {
   const connected = useStore((s) => s.connected)
   const micLevel = useStore((s) => s.micLevel)
   const tabLevel = useStore((s) => s.tabLevel)
+  const ytImportProgress = useStore((s) => s.ytImportProgress)
 
   const { isRecording, isCapturing, captureError, startSession, pauseSession, resumeSession, endSession } = useSession()
 
@@ -50,14 +51,20 @@ export default function RecordingHeader() {
 
   const status = activeSession?.status
   const isActiveRecording = status === 'recording'
+  const isYouTubeSession = activeSession?.source === 'youtube'
+  const isYtProcessing = isYouTubeSession && status === 'processing'
 
   return (
     <div className={`flex items-center gap-3 px-5 py-3 border-b border-slate-200/40 flex-shrink-0 transition-all duration-300 ${
-      isActiveRecording ? 'bg-red-50/60' : ''
+      isActiveRecording ? 'bg-red-50/60' : isYtProcessing ? 'bg-amber-50/40' : ''
     }`}>
       {/* Status indicator */}
       {isActiveRecording ? (
         <span className="flex-shrink-0 rounded-md bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white tracking-wider">REC</span>
+      ) : isYtProcessing ? (
+        <Loader2 className="h-4 w-4 text-amber-500 animate-spin flex-shrink-0" />
+      ) : isYouTubeSession ? (
+        <Youtube className="h-4 w-4 text-slate-400 flex-shrink-0" />
       ) : (
         <span className={`h-2 w-2 rounded-full flex-shrink-0 ${
           status === 'paused'    ? 'bg-amber-500' :
@@ -116,22 +123,59 @@ export default function RecordingHeader() {
         }
       </div>
 
-      {/* Mic toggle */}
-      <button
-        onClick={() => setMicEnabled(!micEnabled)}
-        disabled={isRecording}
-        title={micEnabled ? 'Mic on' : 'Mic off'}
-        className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 cursor-pointer flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${
-          micEnabled
-            ? 'bg-accent/[0.08] text-accent hover:bg-accent/[0.15]'
-            : 'bg-slate-100/60 text-slate-400 hover:bg-slate-200/60'
-        }`}
-      >
-        {micEnabled ? <Mic className="h-3.5 w-3.5" /> : <MicOff className="h-3.5 w-3.5" />}
-      </button>
+      {/* Mic toggle (hidden for YouTube sessions) */}
+      {!isYouTubeSession && (
+        <button
+          onClick={() => setMicEnabled(!micEnabled)}
+          disabled={isRecording}
+          title={micEnabled ? 'Mic on' : 'Mic off'}
+          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 cursor-pointer flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${
+            micEnabled
+              ? 'bg-accent/[0.08] text-accent hover:bg-accent/[0.15]'
+              : 'bg-slate-100/60 text-slate-400 hover:bg-slate-200/60'
+          }`}
+        >
+          {micEnabled ? <Mic className="h-3.5 w-3.5" /> : <MicOff className="h-3.5 w-3.5" />}
+        </button>
+      )}
+
+      {/* YouTube import progress */}
+      {isYtProcessing && ytImportProgress && (
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="text-[10px] font-medium text-slate-500">
+              {ytImportProgress.status === 'downloading'
+                ? `Downloading... ${Math.round(ytImportProgress.percent)}%`
+                : ytImportProgress.status === 'transcribing'
+                  ? ytImportProgress.totalChunks > 0
+                    ? `Transcribing ${ytImportProgress.currentChunk}/${ytImportProgress.totalChunks}`
+                    : 'Preparing transcription...'
+                  : ytImportProgress.status === 'error'
+                    ? 'Import failed'
+                    : 'Processing...'}
+            </span>
+            <div className="h-1.5 w-28 rounded-full bg-slate-200/60 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${
+                  ytImportProgress.status === 'error' ? 'bg-red-500' : 'bg-accent'
+                }`}
+                style={{
+                  width: `${
+                    ytImportProgress.status === 'downloading'
+                      ? ytImportProgress.percent
+                      : ytImportProgress.totalChunks > 0
+                        ? (ytImportProgress.currentChunk / ytImportProgress.totalChunks) * 100
+                        : 10
+                  }%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Record controls */}
-      {activeSession && (
+      {activeSession && !isYouTubeSession && (
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {status === 'idle' && (
             <button

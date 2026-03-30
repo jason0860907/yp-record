@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 _VALID_TRANSITIONS: Dict[SessionStatus, set] = {
-    SessionStatus.IDLE: {SessionStatus.RECORDING},
+    SessionStatus.IDLE: {SessionStatus.RECORDING, SessionStatus.PROCESSING},
     SessionStatus.RECORDING: {SessionStatus.PAUSED, SessionStatus.COMPLETED},
     SessionStatus.PAUSED: {SessionStatus.RECORDING, SessionStatus.COMPLETED},
     SessionStatus.PROCESSING: {SessionStatus.COMPLETED, SessionStatus.ERROR},
@@ -52,6 +52,37 @@ class RecordingSessionManager:
         if self._store:
             await self._store.save_session(session)
         logger.info(f"Session created: {session_id}")
+        return session
+
+    async def start_processing(self, session_id: str) -> SessionInfo:
+        session = self._require_session(session_id)
+        self._check_transition(session, SessionStatus.PROCESSING)
+        session.status = SessionStatus.PROCESSING
+        session.started_at = _iso_now()
+        if self._store:
+            await self._store.save_session(session)
+        logger.info(f"Session processing: {session_id}")
+        return session
+
+    async def complete_processing(self, session_id: str, duration: float = 0.0) -> SessionInfo:
+        session = self._require_session(session_id)
+        self._check_transition(session, SessionStatus.COMPLETED)
+        session.status = SessionStatus.COMPLETED
+        session.ended_at = _iso_now()
+        session.duration_seconds = duration
+        if self._store:
+            await self._store.save_session(session)
+        logger.info(f"Session processing completed: {session_id}")
+        return session
+
+    async def fail_processing(self, session_id: str, error: str = "") -> SessionInfo:
+        session = self._require_session(session_id)
+        self._check_transition(session, SessionStatus.ERROR)
+        session.status = SessionStatus.ERROR
+        session.ended_at = _iso_now()
+        if self._store:
+            await self._store.save_session(session)
+        logger.error(f"Session processing failed: {session_id} — {error}")
         return session
 
     async def start_session(self, session_id: str) -> SessionInfo:

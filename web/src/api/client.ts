@@ -64,6 +64,10 @@ export const getMeetingNote = (id: string) =>
 export const getPolishedTranscript = (id: string) =>
   api.get<{ session_id: string; transcript: string }>(`/sessions/${id}/polished-transcript`).then((r) => r.data)
 
+// YouTube import
+export const importYouTube = (url: string, title?: string) =>
+  api.post<SessionInfo>('/youtube/import', { url, title }).then((r) => r.data)
+
 // Config
 export const getConfig = () =>
   api.get<AppConfig>('/config').then((r) => r.data)

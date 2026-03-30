@@ -130,6 +130,22 @@ class RecordingService:
         """Re-run transcript polishing and meeting note generation."""
         await self.pipeline.trigger_extract(session_id)
 
+    async def import_youtube(self, url: str, session_id: str) -> None:
+        """Download YouTube audio and run through the ASR pipeline."""
+        from src.recording.youtube import YouTubeImporter
+
+        importer = YouTubeImporter(
+            stt_engine=self.stt_engine,
+            store=self.session_store,
+            sample_rate=self._settings.sample_rate,
+            chunk_seconds=self._settings.buffer_seconds,
+        )
+        try:
+            await importer.import_video(url, session_id)
+            await self.session_manager.complete_processing(session_id)
+        except Exception:
+            await self.session_manager.fail_processing(session_id, error=str(url))
+
     @property
     def extract_enabled(self) -> bool:
         return self._extractor is not None

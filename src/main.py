@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from src.infra.config import get_settings
 from src.recording.service import get_service
-from src.routers import sessions, audio_ws, transcript_ws, alignment, notion_export, screenshots
+from src.routers import sessions, audio_ws, transcript_ws, alignment, notion_export, screenshots, youtube
 from src.routers.transcript_ws import setup_event_handlers
 from src.infra.logging import get_logger
 
@@ -60,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(alignment.router)
     app.include_router(notion_export.router)
     app.include_router(screenshots.router)
+    app.include_router(youtube.router)
 
     # Health + config
     @app.get("/api/health")

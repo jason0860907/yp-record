@@ -1,8 +1,11 @@
 export type SessionStatus = 'idle' | 'recording' | 'paused' | 'processing' | 'completed' | 'error'
+export type SessionSource = 'recording' | 'youtube'
 
 export interface SessionInfo {
   id: string
   status: SessionStatus
+  source?: SessionSource
+  source_url?: string | null
   title: string | null
   started_at: string | null
   ended_at: string | null

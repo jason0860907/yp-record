@@ -25,9 +25,16 @@ class SessionStatus(str, Enum):
     ERROR = "error"
 
 
+class SessionSource(str, Enum):
+    RECORDING = "recording"
+    YOUTUBE = "youtube"
+
+
 class SessionInfo(BaseModel):
     id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     status: SessionStatus = SessionStatus.IDLE
+    source: SessionSource = SessionSource.RECORDING
+    source_url: str | None = None
     title: str | None = None
     started_at: str | None = None
     ended_at: str | None = None

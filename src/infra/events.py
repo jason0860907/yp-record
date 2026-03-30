@@ -34,6 +34,13 @@ class EventType(Enum):
     # Knowledge extraction (transcript polish + meeting note)
     KNOWLEDGE_EXTRACTED = "knowledge.extracted"
 
+    # YouTube import
+    YOUTUBE_DOWNLOAD_STARTED = "youtube.download_started"
+    YOUTUBE_DOWNLOAD_PROGRESS = "youtube.download_progress"
+    YOUTUBE_DOWNLOAD_COMPLETED = "youtube.download_completed"
+    YOUTUBE_DOWNLOAD_FAILED = "youtube.download_failed"
+    YOUTUBE_TRANSCRIPTION_PROGRESS = "youtube.transcription_progress"
+
 
 @dataclass
 class EventMeta:

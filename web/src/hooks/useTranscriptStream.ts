@@ -27,6 +27,7 @@ export function useTranscriptStream(): UseTranscriptStreamReturn {
   const addSegment = useStore((s) => s.addSegment)
   const setActiveTab = useStore((s) => s.setActiveTab)
   const setConnectedStore = useStore((s) => s.setConnected)
+  const setYtImportProgress = useStore((s) => s.setYtImportProgress)
 
   const handleMessage = useCallback(
     (event: MessageEvent) => {
@@ -42,12 +43,47 @@ export function useTranscriptStream(): UseTranscriptStreamReturn {
             // Invalidate alignment queries so UI refreshes
             queryClient.invalidateQueries({ queryKey: ['alignment'] })
             queryClient.invalidateQueries({ queryKey: ['alignment-status'] })
+            queryClient.invalidateQueries({ queryKey: ['sessions'] })
+            setYtImportProgress(null)
             if (msg.type === 'alignment_completed') {
               setActiveTab('alignment')
             }
             break
           case 'alignment_started':
             queryClient.invalidateQueries({ queryKey: ['alignment-status'] })
+            break
+          case 'youtube_download_progress':
+            setYtImportProgress({
+              status: 'downloading',
+              percent: (msg.percent as number) || 0,
+              currentChunk: 0,
+              totalChunks: 0,
+            })
+            break
+          case 'youtube_download_completed':
+            setYtImportProgress({
+              status: 'transcribing',
+              percent: 100,
+              currentChunk: 0,
+              totalChunks: 0,
+            })
+            break
+          case 'youtube_transcription_progress':
+            setYtImportProgress({
+              status: 'transcribing',
+              percent: 100,
+              currentChunk: (msg.current_chunk as number) || 0,
+              totalChunks: (msg.total_chunks as number) || 0,
+            })
+            break
+          case 'youtube_download_failed':
+            setYtImportProgress({
+              status: 'error',
+              percent: 0,
+              currentChunk: 0,
+              totalChunks: 0,
+              error: (msg.error as string) || 'Download failed',
+            })
             break
           case 'ping':
             break
@@ -58,7 +94,7 @@ export function useTranscriptStream(): UseTranscriptStreamReturn {
         // ignore parse errors
       }
     },
-    [addSegment, queryClient, setActiveTab]
+    [addSegment, queryClient, setActiveTab, setYtImportProgress]
   )
 
   const connectWs = useCallback(

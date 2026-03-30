@@ -1,11 +1,23 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Crop, RotateCcw } from 'lucide-react'
-import { getAlignmentStatus, getAlignmentResult, getAudioUrl, listScreenshots, getScreenshotUrl } from '../api/client'
+import { getAlignmentStatus, getAlignmentResult, getAudioUrl, getSession, listScreenshots, getScreenshotUrl } from '../api/client'
+import { useStore } from '../store/useStore'
 import AlignmentStatusBanner from './AlignmentStatusBanner'
 import WordTimeline from './WordTimeline'
 import AudioPlayer from './AudioPlayer'
+import YouTubePlayer from './YouTubePlayer'
 import type { AlignmentStatus } from '../types'
+
+function extractYouTubeId(url: string): string | null {
+  try {
+    const u = new URL(url)
+    if (u.hostname.includes('youtu.be')) return u.pathname.slice(1)
+    return u.searchParams.get('v')
+  } catch {
+    return null
+  }
+}
 
 interface CropRect {
   x: number; y: number; w: number; h: number  // 0-1 percentages
@@ -70,6 +82,18 @@ export default function AlignmentView({ sessionId }: Props) {
   const [croppedDataUrl, setCroppedDataUrl] = useState<string | null>(null)
   const imgRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+
+  // Determine if this is a YouTube session
+  const activeSession = useStore((s) => s.activeSession)
+  const { data: fetchedSession } = useQuery({
+    queryKey: ['session', sessionId],
+    queryFn: () => getSession(sessionId),
+    enabled: activeSession?.id !== sessionId,
+  })
+  const session = activeSession?.id === sessionId ? activeSession : fetchedSession
+  const youtubeVideoId = session?.source === 'youtube' && session.source_url
+    ? extractYouTubeId(session.source_url)
+    : null
 
   const { data: status } = useQuery<AlignmentStatus>({
     queryKey: ['alignment-status', sessionId],
@@ -185,7 +209,7 @@ export default function AlignmentView({ sessionId }: Props) {
             serviceAvailable={status?.service_available ?? false}
           />
         )}
-        {status?.wav_available && (
+        {!youtubeVideoId && status?.wav_available && (
           <AudioPlayer
             src={getAudioUrl(sessionId)}
             currentTime={seekTime}
@@ -194,9 +218,18 @@ export default function AlignmentView({ sessionId }: Props) {
         )}
       </div>
 
-      {/* Main: screenshot (left 60%) + word timeline (right 40%) */}
-      <div className={`flex-1 min-h-0 flex ${hasScreenshots ? 'gap-4' : ''} px-5 py-4`}>
-        {currentScreenshot && currentSrc && (
+      {/* Main: left media (60%) + word timeline (right 40%) */}
+      <div className={`flex-1 min-h-0 flex ${(hasScreenshots || youtubeVideoId) ? 'gap-4' : ''} px-5 py-4`}>
+        {/* Left: YouTube embed OR screenshot */}
+        {youtubeVideoId ? (
+          <div className="w-3/5 flex-shrink-0 flex items-start">
+            <YouTubePlayer
+              videoId={youtubeVideoId}
+              currentTime={seekTime}
+              onTimeUpdate={setPlayingTime}
+            />
+          </div>
+        ) : currentScreenshot && currentSrc ? (
           <div className="w-3/5 flex-shrink-0">
             <div
               className={`relative rounded-lg border border-white/[0.08] bg-black/20 overflow-hidden select-none ${isCropping ? 'cursor-crosshair' : ''}`}
@@ -204,7 +237,6 @@ export default function AlignmentView({ sessionId }: Props) {
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
             >
-              {/* Show original when cropping, cropped canvas otherwise */}
               {isCropping ? (
                 <img
                   ref={imgRef}
@@ -222,7 +254,6 @@ export default function AlignmentView({ sessionId }: Props) {
                 />
               )}
 
-              {/* Drag selection rectangle */}
               {isCropping && selectionStyle && (
                 <div
                   className="absolute border-2 border-accent bg-accent/10 rounded-sm pointer-events-none"
@@ -230,7 +261,6 @@ export default function AlignmentView({ sessionId }: Props) {
                 />
               )}
 
-              {/* Crop / Reset buttons — bottom-left overlay */}
               <div className="absolute bottom-2 left-2 flex items-center gap-1">
                 {!isCropping && !cropRect && (
                   <button
@@ -267,9 +297,10 @@ export default function AlignmentView({ sessionId }: Props) {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
-        <div className={`${hasScreenshots ? 'w-2/5' : 'w-full'} overflow-y-auto scrollbar-thin`}>
+        {/* Right: word timeline */}
+        <div className={`${(hasScreenshots || youtubeVideoId) ? 'w-2/5' : 'w-full'} overflow-y-auto scrollbar-thin`}>
           {result && result.segments.length > 0 && (
             <WordTimeline
               segments={result.segments}

@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import type { SessionInfo, TranscriptSegment } from '../types'
 
+export interface YtImportProgress {
+  status: 'downloading' | 'transcribing' | 'done' | 'error'
+  percent: number
+  currentChunk: number
+  totalChunks: number
+  error?: string
+}
+
 interface RecordStore {
   // Active session
   activeSession: SessionInfo | null
@@ -11,6 +19,9 @@ interface RecordStore {
 
   // Session list
   sessions: SessionInfo[]
+
+  // YouTube import
+  ytImportProgress: YtImportProgress | null
 
   // UI state
   selectedSessionId: string | null
@@ -28,6 +39,7 @@ interface RecordStore {
   setSelectedSessionId: (id: string | null) => void
   setActiveTab: (tab: 'live' | 'alignment' | 'note') => void
   setConnected: (v: boolean) => void
+  setYtImportProgress: (p: YtImportProgress | null) => void
 }
 
 export const useStore = create<RecordStore>((set) => ({
@@ -37,6 +49,7 @@ export const useStore = create<RecordStore>((set) => ({
   micLevel: 0,
   tabLevel: 0,
   sessions: [],
+  ytImportProgress: null,
   selectedSessionId: null,
   activeTab: 'live',
   connected: false,
@@ -51,4 +64,5 @@ export const useStore = create<RecordStore>((set) => ({
   setSelectedSessionId: (selectedSessionId) => set({ selectedSessionId }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setConnected: (connected) => set({ connected }),
+  setYtImportProgress: (ytImportProgress) => set({ ytImportProgress }),
 }))
