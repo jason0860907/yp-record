@@ -7,6 +7,7 @@ A full-stack application that captures audio, transcribes it in real time, align
 ## Features
 
 - **Real-time recording** — stream audio via WebSocket from microphone and browser tab
+- **YouTube import** — paste a URL to get transcript and meeting notes; subtitle-first (grabs existing captions when available, falls back to ASR), with embedded video player and click-to-seek sync
 - **Automatic Speech Recognition** — Qwen3-ASR powered by vLLM
 - **Forced alignment** — word-level timestamps via Qwen3-ForcedAligner
 - **Speaker diarization** — multi-speaker identification via pyannote.audio
@@ -83,35 +84,54 @@ Open **http://localhost:5173** in your browser.
 ## Pipeline
 
 ```
-Browser Audio ──WebSocket──▸ AudioReceiver
-                                │
-                          split stereo channels
-                                │
-                          ┌─────▼─────┐
-                          │  Qwen ASR  │  real-time speech-to-text
-                          └─────┬─────┘
-                                │
-                       TranscriptSegments
-                          (event bus)
-                                │
-                    ┌───────────▼───────────┐
-                    │   Session ends        │
-                    └───────────┬───────────┘
-                                │
-              ┌─────────────────┼─────────────────┐
-              ▼                 ▼                  ▼
-      Forced Aligner    Diarization        LLM Extraction
-     (word timestamps)  (speaker IDs)   (polish + meeting note)
-              │                 │                  │
-              └─────────────────┼──────────────────┘
-                                ▼
-                          Notion Export
+                    ┌──────────────────────┐
+                    │   Audio Sources       │
+                    ├──────────┬───────────┤
+                    │ Browser  │  YouTube  │
+                    │ Audio    │  Import   │
+                    └────┬─────┴─────┬─────┘
+                         │           │
+                    WebSocket    yt-dlp download
+                         │       + subtitle grab
+                         ▼           │
+                   AudioReceiver     │
+                         │           │
+                   split stereo      │
+                         │           │
+                   ┌─────▼─────┐     │
+                   │  Qwen ASR │     │  (skip ASR if subtitles exist)
+                   └─────┬─────┘     │
+                         │           │
+                         └─────┬─────┘
+                               │
+                      TranscriptSegments
+                         (event bus)
+                               │
+                   ┌───────────▼───────────┐
+                   │    Session ends        │
+                   └───────────┬───────────┘
+                               │
+             ┌─────────────────┼─────────────────┐
+             ▼                 ▼                  ▼
+     Forced Aligner    Diarization        LLM Extraction
+    (word timestamps)  (speaker IDs)   (polish + meeting note)
+             │                 │                  │
+             └─────────────────┼──────────────────┘
+                               ▼
+                         Notion Export
 ```
 
+### Recording path
 1. **Audio capture** — PCM audio streamed from browser via WebSocket
 2. **ASR** — buffered audio chunks sent to Qwen3-ASR (vLLM) for real-time transcription
 3. **On session end** — forced alignment, speaker diarization, and LLM extraction run in parallel
 4. **Export** — aligned transcript and meeting notes published to Notion
+
+### YouTube import path
+1. **Paste URL** — extract video metadata via yt-dlp
+2. **Subtitle-first** — grab existing captions (manual > auto, zh > en); fall back to audio download + ASR if none
+3. **Stream progress** — transcript segments stream to the UI in real time via WebSocket
+4. **Same downstream** — alignment, diarization, LLM extraction, and Notion export all reuse the recording pipeline
 
 ## Environment Variables
 
