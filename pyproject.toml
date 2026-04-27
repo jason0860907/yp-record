@@ -25,6 +25,7 @@ gpu = [
     "qwen-asr>=0.0.6",
     "pyannote.audio>=3.1.0",
     "transformers>=4.40.0",
+    "vllm>=0.19.0",
 ]
 
 [project.scripts]

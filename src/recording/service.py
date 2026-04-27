@@ -49,7 +49,6 @@ class RecordingService:
         self.diarization_service: DiarizationService | None = None
         if settings.diarization_enabled:
             self.diarization_service = DiarizationService(
-                hf_token=settings.diarization_hf_token,
                 device=settings.diarization_device,
                 min_speakers=settings.diarization_min_speakers,
                 max_speakers=settings.diarization_max_speakers,

@@ -23,12 +23,10 @@ class DiarizationService:
 
     def __init__(
         self,
-        hf_token: str = "",
         device: str = "auto",
         min_speakers: int | None = None,
         max_speakers: int | None = None,
     ) -> None:
-        self._hf_token = hf_token
         self._device_cfg = device
         self._min_speakers = min_speakers
         self._max_speakers = max_speakers
@@ -46,10 +44,7 @@ class DiarizationService:
 
         device = self._resolve_device()
         logger.info(f"Loading pyannote diarization pipeline device={device}")
-        self._pipeline = Pipeline.from_pretrained(
-            "pyannote/speaker-diarization-3.1",
-            token=self._hf_token or None,
-        )
+        self._pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1")
         if device != "cpu":
             import torch
             self._pipeline = self._pipeline.to(torch.device(device))

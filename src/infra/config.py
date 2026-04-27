@@ -31,10 +31,12 @@ class Settings(BaseSettings):
 
     # Diarization
     diarization_enabled: bool = True
-    diarization_hf_token: str = ""
     diarization_device: str = "auto"
     diarization_min_speakers: int | None = None
     diarization_max_speakers: int | None = None
+
+    # HuggingFace (consumed via env by pyannote / transformers / etc.)
+    hf_token: str = ""
 
     # Notion
     notion_api_key: str = ""

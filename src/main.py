@@ -1,6 +1,9 @@
 """FastAPI application entry point."""
 from __future__ import annotations
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import warnings
 warnings.filterwarnings("ignore", message="torchcodec is not installed")
 warnings.filterwarnings("ignore", message="TensorFloat-32.*has been disabled")
